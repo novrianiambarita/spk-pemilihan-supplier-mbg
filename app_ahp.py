@@ -76,12 +76,12 @@ if 'list_alternatif' not in st.session_state: st.session_state.list_alternatif =
 
 # --- 5. NAVIGASI ATAS ---
 tab_home, tab_kriteria, tab_alternatif, tab_hasil, tab_riwayat = st.tabs([
-    "🏠 Beranda", "⚖️ Tahap 1: Kriteria", "🏢 Tahap 2: Input Data", "📊 Tahap 3: Hasil", "📜 Riwayat"
+    "BERANDA", "TAHAP 1 : KRITERIA", "TAHAP 2 : INPUT DATA", "TAHAP 3 : HASIL", "RIWAYAT"
 ])
 
 # --- HALAMAN 1: BERANDA ---
 with tab_home:
-    st.markdown("<div class='main-header'><h1>🍱 Program Makan Siang Gratis <br>Sekolah Kec. Setu, Tangsel</h1></div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-header'><h1>Program Makan Siang Gratis <br>Sekolah Kec. Setu, Tangsel</h1></div>", unsafe_allow_html=True)
     col_img, col_txt = st.columns([1, 1])
     with col_img:
         st.image("https://img.freepik.com/free-vector/healthy-food-concept-illustration_114360-1498.jpg", use_container_width=True)
@@ -98,21 +98,21 @@ with tab_home:
 
 # --- HALAMAN 2: KRITERIA ---
 with tab_kriteria:
-    st.header("⚖️ Tahap 1: Konfigurasi Kriteria & Bobot")
+    st.header("TAHAP 1: PENENTUAN KRITERIA & BOBOT")
     st.markdown("<div class='step-box'>", unsafe_allow_html=True)
     col_a, col_b = st.columns(2)
     with col_a:
-        k_input = st.text_area("✍️ Daftar Kriteria (Pisahkan dengan koma)", ", ".join(st.session_state.list_kriteria))
+        k_input = st.text_area("Daftar Kriteria (Pisahkan dengan koma)", ", ".join(st.session_state.list_kriteria))
     with col_b:
-        a_input = st.text_area("✍️ Daftar Alternatif (Pisahkan dengan koma)", ", ".join(st.session_state.list_alternatif))
+        a_input = st.text_area("Daftar Alternatif (Pisahkan dengan koma)", ", ".join(st.session_state.list_alternatif))
     
-    if st.button("Simpan Konfigurasi Dasar"):
+    if st.button("SIMPAN DAFTAR KRITERIA & ALTERNATIF"):
         st.session_state.list_kriteria = [x.strip() for x in k_input.split(",")]
         st.session_state.list_alternatif = [x.strip() for x in a_input.split(",")]
         st.success("Daftar diperbarui!")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("### 🔄 Perbandingan Kriteria")
+    st.markdown("### Perbandingan Kriteria")
     list_k = st.session_state.list_kriteria
     n = len(list_k)
     matriks_k = np.eye(n)
@@ -122,7 +122,7 @@ with tab_kriteria:
             matriks_k[i, j] = val
             matriks_k[j, i] = 1 / val
             
-    if st.button("🚀 Hitung Bobot Kriteria"):
+    if st.button("HITUNG BOBOT KRITERIA"):
         w, cr = hitung_ahp(matriks_k)
         st.session_state.weights = w
         st.session_state.cr = cr
@@ -131,13 +131,13 @@ with tab_kriteria:
 
 # --- HALAMAN 3: INPUT DATA ---
 with tab_alternatif:
-    st.header("🏢 Tahap 2: Input Nilai Alternatif")
+    st.header("TAHAP 2: INPUT DATA SUPPLIER")
     if st.session_state.weights is None:
-        st.warning("⚠️ Selesaikan Tahap 1 terlebih dahulu!")
+        st.warning("Selesaikan Tahap 1 terlebih dahulu!")
     else:
         temp_data = []
         for i, alt in enumerate(st.session_state.list_alternatif):
-            with st.expander(f"📊 Data untuk: {alt}", expanded=True):
+            with st.expander(f"Data untuk: {alt}", expanded=True):
                 cols = st.columns(len(st.session_state.list_kriteria))
                 row_val = []
                 for j, k in enumerate(st.session_state.list_kriteria):
@@ -155,13 +155,13 @@ with tab_alternatif:
                     row_val.append(val)
                 temp_data.append([alt] + row_val)
         
-        if st.button("✅ Simpan Data"):
+        if st.button("SIMPAN DATA SUPPLIER"):
             st.session_state.raw_matrix = temp_data
             st.success("Data disimpan! Silakan buka Tab Hasil.")
 
 # --- HALAMAN 4: HASIL ---
 with tab_hasil:
-    st.header("📊 Tahap 3: Analisis Hasil")
+    st.header("TAHAP 3: ANALISIS HASIL SUPPLIER")
     if 'raw_matrix' not in st.session_state:
         st.error("Data belum lengkap.")
     else:
@@ -193,14 +193,14 @@ with tab_hasil:
         st.success(f"Pemenang: **{df_rank.iloc[0]['Supplier']}**")
         st.dataframe(df_rank[["Ranking", "Supplier", "Skor"]].style.format({"Skor": "{:.4f}"}), use_container_width=True)
         
-        if st.button("💾 Simpan Hasil ke Database"):
+        if st.button("SIMPAN HASIL KE RIWAYAT"):
             simpan_hasil(df_rank.iloc[0]['Supplier'], float(df_rank.iloc[0]['Skor']), st.session_state.list_kriteria)
             st.balloons()
             st.success("Hasil berhasil diarsipkan!")
 
 # --- HALAMAN 5: RIWAYAT ---
 with tab_riwayat:
-    st.header("📜 Riwayat Keputusan Terdahulu")
+    st.header("RIWAYAT KEPUTUSAN SUPPLIER")
     conn = sqlite3.connect('spk_ahp.db')
     df_h = pd.read_sql_query("SELECT tanggal, pemenang, skor, kriteria FROM riwayat_keputusan ORDER BY tanggal DESC", conn)
     conn.close()
